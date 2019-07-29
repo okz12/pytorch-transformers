@@ -155,32 +155,44 @@ def main():
 
 class text_generator:
 
-    def __init__(self, args):
-
-        self.args = args
-        set_seed(args)
-        args.model_type = args.model_type.lower()
-        model_class, tokenizer_class = MODEL_CLASSES[args.model_type]
-        self.tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path)
-        self.model = model_class.from_pretrained(args.model_name_or_path)
-        self.model.to(args.device)
+    def __init__(self,
+                 model_type="xlnet",
+                 model_name_or_path="xlnet-base-cased",
+                 padding_text="",
+                 length=50,
+                 temperature=1.0,
+                 top_k=0.0,
+                 top_p=0.9,
+                 no_cuda=False,
+                 seed=42):
+        device = torch.device("cuda" if torch.cuda.is_available() and not no_cuda else "cpu")
+        set_seed(seed)
+        self.model_type = model_type.lower()
+        model_class, tokenizer_class = MODEL_CLASSES[model_type]
+        self.tokenizer = tokenizer_class.from_pretrained(model_name_or_path)
+        self.model = model_class.from_pretrained(model_name_or_path)
+        self.model.to(device)
         self.model.eval()
+        self.length = length
 
-        if args.length < 0 and model.config.max_position_embeddings > 0:
-            args.length = model.config.max_position_embeddings
-        elif 0 < model.config.max_position_embeddings < args.length:
-            args.length = model.config.max_position_embeddings  # No generation bigger than model size
-        elif args.length < 0:
-            args.length = MAX_LENGTH  # avoid infinite loop
+        self.padding_text = padding_text
+        self.temperature = temperature
+        self.top_k = top_k
+        self.top_p = top_p
 
-        print(args)
+        if self.length < 0 and self.model.config.max_position_embeddings > 0:
+            self.length = self.model.config.max_position_embeddings
+        elif 0 < self.model.config.max_position_embeddings < self.length:
+            self.length = self.model.config.max_position_embeddings  # No generation bigger than model size
+        elif self.length < 0:
+            self.length = MAX_LENGTH  # avoid infinite loop
 
-    def generate_text(self, input_text, text_length=self.args.len):
+    def generate_text(self, input_text, text_length=self.length):
         raw_text = input_text
-        if args.model_type in ["transfo-xl", "xlnet"]:
+        if self.model_type in ["transfo-xl", "xlnet"]:
             # Models with memory likes to have a long prompt for short inputs.
-            raw_text = (args.padding_text if args.padding_text else PADDING_TEXT) + raw_text
-        context_tokens = tokenizer.encode(raw_text)
+            raw_text = (self.padding_text if self.padding_text else PADDING_TEXT) + raw_text
+        context_tokens = self.tokenizer.encode(raw_text)
         out = sample_sequence(
             model=self.model,
             context=context_tokens,
@@ -194,8 +206,3 @@ class text_generator:
         out = out[0, len(context_tokens):].tolist()
         text = self.tokenizer.decode(out, clean_up_tokenization_spaces=True)
         return text
-
-
-
-if __name__ == '__main__':
-    main()
