@@ -153,7 +153,7 @@ def main():
     args.device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
     args.n_gpu = torch.cuda.device_count()
 
-class text_generator():
+class text_generator:
 
     def __init__(self, args):
 
