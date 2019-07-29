@@ -144,13 +144,13 @@ class text_generator:
                  no_cuda=False,
                  seed=42,
                  n_gpu=1):
-        device = torch.device("cuda" if torch.cuda.is_available() and not no_cuda else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() and not no_cuda else "cpu")
         set_seed(seed, n_gpu)
         self.model_type = model_type.lower()
         model_class, tokenizer_class = MODEL_CLASSES[model_type]
         self.tokenizer = tokenizer_class.from_pretrained(model_name_or_path)
         self.model = model_class.from_pretrained(model_name_or_path)
-        self.model.to(device)
+        self.model.to(self.device)
         self.model.eval()
         self.length = length
 
