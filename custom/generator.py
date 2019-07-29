@@ -176,11 +176,11 @@ class text_generator:
             model=self.model,
             context=context_tokens,
             length=self.length,
-            temperature=self.args.temperature,
-            top_k=self.args.top_k,
-            top_p=self.args.top_p,
-            device=self.args.device,
-            is_xlnet=bool(self.args.model_type == "xlnet"),
+            temperature=self.temperature,
+            top_k=self.top_k,
+            top_p=self.top_p,
+            device=self.device,
+            is_xlnet=bool(self.model_type == "xlnet"),
         )
         out = out[0, len(context_tokens):].tolist()
         text = self.tokenizer.decode(out, clean_up_tokenization_spaces=True)
