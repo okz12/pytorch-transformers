@@ -187,7 +187,7 @@ class text_generator:
         elif self.length < 0:
             self.length = MAX_LENGTH  # avoid infinite loop
 
-    def generate_text(self, input_text, text_length=self.length):
+    def generate_text(self, input_text):
         raw_text = input_text
         if self.model_type in ["transfo-xl", "xlnet"]:
             # Models with memory likes to have a long prompt for short inputs.
@@ -196,7 +196,7 @@ class text_generator:
         out = sample_sequence(
             model=self.model,
             context=context_tokens,
-            length=text_length,
+            length=self.length,
             temperature=self.args.temperature,
             top_k=self.args.top_k,
             top_p=self.args.top_p,
